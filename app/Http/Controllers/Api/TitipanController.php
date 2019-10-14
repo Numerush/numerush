@@ -5,11 +5,13 @@ namespace App\Http\Controllers\Api;
 use Illuminate\Http\Request;
 use App\Http\Controllers\Controller;
 
+use Auth;
 use DB;
 use App\User;
 use App\Models\BoxTitipan;
 use App\Models\Titipan;
 use App\Transformers\BoxTitipanTransformer;
+use App\Transformers\TitipanTransformer;
 
 use League\Fractal\Manager;
 use League\Fractal\Pagination\IlluminatePaginatorAdapter;
@@ -21,10 +23,11 @@ class TitipanController extends Controller
     private $fractal;
     private $boxTitipanTransformer;
 
-    function __construct(Manager $fractal, BoxTitipanTransformer $boxTitipanTransformer)
+    function __construct(Manager $fractal, BoxTitipanTransformer $boxTitipanTransformer, TitipanTransformer $titipanTransformer)
     {
         $this->fractal = $fractal;
         $this->boxTitipanTransformer = $boxTitipanTransformer;
+        $this->titipanTransformer = $titipanTransformer;
     }
 
     public function index()

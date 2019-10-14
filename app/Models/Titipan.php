@@ -26,7 +26,7 @@ class Titipan extends Model
         return $this->belongsTo(Alamat::class, 'dikirim_ke');
     }
 
-    public function saveToTitipan(Request $request)
+    public static function saveToTitipan(Request $request)
     {
         try
         {
@@ -57,7 +57,6 @@ class Titipan extends Model
                     $titipan->status_transaksi_id = 1;
                     $titipan->kode_unik = rand(1,999);
                     $titipan->save();
-    
                     $total = 0;
                     
                     foreach($isi as $box)
@@ -79,29 +78,39 @@ class Titipan extends Model
             }
             else if($jumlahShopper == 1)
             {
+                
                 $titipan = new Titipan;
+                
                 $titipan->user_id = $isi_box->first()->user_id;
                 $titipan->shopper_id = $isi_box->first()->shopper_id;
                 $titipan->total_harga = 0;
                 $titipan->total_harga_kirim = $request->total_harga_kirim;
                 $titipan->metode_bayar = $request->metode_bayar;
                 $titipan->kurir_id = $request->kurir_id;
+                $titipan->estimasi_pengiriman = $isi_box->first()->estimasi_pengiriman;
+                    $titipan->dibeli_dari = $isi_box->first()->dibeli_dari;
                 $titipan->dikirim_dari = $isi_box->first()->dikirim_dari;
                 $titipan->dikirim_ke = $isi_box->first()->dikirim_ke;
                 $titipan->status_transaksi_id = 1;
                 $titipan->kode_unik = rand(1,999);
+                
                 $titipan->save();
+
+                
+
+                
     
                 $total = 0;
     
                 foreach($isi_box as $box)
                 {
+                    
                     $detil = new DetailTitipan;
                     $detil->harga = $box->harga;
                     $detil->titipan_id = $titipan->id;
                     $detil->varian_id = $box->varian_id;
-                    $detil->tipe = $box->tipe;
-                    $detil->post_id = $box->post_id;
+                    $detil->postdata_type = $box->postdata_type;
+                    $detil->postdata_id = $box->postdata_id;
                     $detil->save();
                     
                     $total += $box->harga;
@@ -117,7 +126,9 @@ class Titipan extends Model
             }
         } catch(\Exception $e)
         {
+            
             DB::rollBack();
+            dd($e);
             return false;
         }
 
