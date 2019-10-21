@@ -137,9 +137,8 @@ class UserController extends Controller
 
         $data = new Collection($dataPaginator, $this->doTripTransformer);
         $this->fractal->setSerializer(new \App\Foundations\Fractal\NoDataArraySerializer);
-        $this->fractal->parseIncludes('user,user.review,user.review.reviewer,varian,trip,trip.asal,trip.asal.negara,trip.tujuan,trip.tujuan.negara,dikirimke,dikirimke.kota,dikirimke.kota.negara'); // parse includes
+        $this->fractal->parseIncludes('user,user.review,user.review.reviewer,varian,trip,trip.asal,trip.asal.negara,trip.tujuan,trip.tujuan.negara,dikirimke,dikirimke.kota,dikirimke.kota.negara,detail,detail.kategori,detail.gambar'); // parse includes
         $data = $this->fractal->createData($data); // Transform data
-
         return $data->toArray(); // Get transformed array of data
     }
 

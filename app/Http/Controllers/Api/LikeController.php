@@ -28,12 +28,18 @@ class LikeController extends Controller
         $currentUser = User::getCurrentUser();
 
         $likes = Like::where('user_id', $currentUser->id)->get(); // Get users from DB
+        // dd($likes);
+        
         $likes = new Collection($likes, $this->likeTransformer); // Create a resource collection transformer
+        
         $this->fractal->setSerializer(new \App\Foundations\Fractal\NoDataArraySerializer);
-        $this->fractal->parseIncludes('user,post,post.user,post.detail,post.dibelidari,post.detail.gambar,post.detail.kategori,post.detail.varian'); // parse includes
+        
+        $this->fractal->parseIncludes('user,post,post.user,post.detail,post.dibelidari,post.detail.gambar,post.detail.kategori,post.detail.varian,post.asal,post.tujuan,post.asal.negara,post.tujuan.negara'); // parse includes
+        
         $likes = $this->fractal->createData($likes); // Transform data
-
+        
         return $likes->toArray(); // Get transformed array of data
+        
     }
 
     public function saveLiked(Request $request, $tipe)

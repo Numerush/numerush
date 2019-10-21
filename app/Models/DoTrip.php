@@ -11,7 +11,7 @@ use DB;
 class DoTrip extends Model
 {
     //user_id orang yg offer
-    protected $fillable = ['user_id', 'trip_id', 'status', 'dikirim_ke', 'jumlah', 'varian_id', 'expired'];
+    protected $fillable = ['user_id', 'trip_id', 'status', 'dikirim_ke', 'jumlah', 'varian_id', 'expired','detail_product_id'];
 
     public function varian()
     {
@@ -42,7 +42,7 @@ class DoTrip extends Model
             DB::beginTransaction();
             $detailID = DetailProduk::createVarian($request);
             $varianID = DetailProduk::find($detailID)->varian->first()->id;
-
+            $data->detail_product_id = $detailID;
             $data->user_id = $request->user_id;
             $data->trip_id = $request->trip_id;
             // $data->dibeli_dari = $request->dibeli_dari;

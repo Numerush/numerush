@@ -27,11 +27,11 @@ class LikeTransformer extends TransformerAbstract
 
     public function includePost(Like $like)
     {
-        if($like->tipe == 0)
+        if($like->postdata_type == "App\Models\Preorder")
             return $this->item($like->postdata, \App::make(PreorderTransformer::class),'include');
-        else if($like->tipe == 1)
+        else if($like->postdata_type == "App\Models\Requesting")
             return $this->item($like->postdata, \App::make(RequestingTransformer::class),'include');
-        else if($like->tipe == 2)
+        else if($like->postdata_type == "App\Models\Trip")
             return $this->item($like->postdata, \App::make(TripTransformer::class),'include');
     }
 }

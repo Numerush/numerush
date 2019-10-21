@@ -59,7 +59,7 @@ class BoxTitipan extends Model
                 $offer = DoPreorder::find($offer_post_id);
                 $detail = $offer->varian->detail_produk;
                 $varian = $offer->varian;
-                
+                $user_id=$offer->user_id;
                 $harga = $varian->harga * $offer->jumlah;
                 $idPenjual = $offer->preorder->user->id;
                 $estimasi = $offer->preorder->estimasi_pengiriman;
@@ -79,9 +79,9 @@ class BoxTitipan extends Model
                 $beli_dari = $offer->dibeli_dari;
                 $detail = $offer->varian->detail_produk;
                 $varian = $offer->varian;
-                
+                $user_id=$offer->requesting->user->id;
                 $harga = $varian->harga;
-                $idPenjual = $offer->requesting->user->id;
+                $idPenjual = $offer->user_id;
                 $post_id = $offer->requesting_id;
 
                 $postdata_id = Requesting::find($post_id)->id;
@@ -95,7 +95,7 @@ class BoxTitipan extends Model
                 $offer = DoTrip::find($offer_post_id);
                 $detail = $offer->varian->detail_produk;
                 $varian = $offer->varian;
-
+                $user_id=$offer->user_id;
                 $harga = $varian->harga * $offer->jumlah;
                 $idPenjual = $offer->trip->user->id;
                 $estimasi = $offer->trip->estimasi_pengiriman;
@@ -123,7 +123,7 @@ class BoxTitipan extends Model
                 $berat = $offer->berat;
             }
 
-            $box->user_id = $offer->user_id;
+            $box->user_id = $user_id;
             $box->shopper_id = $idPenjual;
             $box->harga = $harga;
             $box->dibeli_dari = $beli_dari;

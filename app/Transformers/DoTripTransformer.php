@@ -1,13 +1,14 @@
 <?php
 namespace App\Transformers;
 
+use App\Models\DetailProduk;
 use App\Models\DoTrip;
 use League\Fractal\TransformerAbstract;
 
 class DoTripTransformer extends TransformerAbstract
-{
+{ 
     protected $availableIncludes = [
-        'varian', 'trip', 'dikirimke', 'user'
+        'varian', 'trip', 'dikirimke', 'user','detail'
     ];
 
     public function transform(DoTrip $data)
@@ -44,5 +45,10 @@ class DoTripTransformer extends TransformerAbstract
     public function includeDikirimKe(DoTrip $data)
     {
         return $this->item($data->dikirimke, \App::make(AlamatTransformer::class), 'include');
+    }
+
+    public function includeDetail(DoTrip $data)
+    {
+        return $this->item(DetailProduk::find($data->detail_product_id), \App::make(DetailProdukTransformer::class), 'include');
     }
 }
