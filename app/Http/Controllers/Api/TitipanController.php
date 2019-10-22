@@ -59,7 +59,8 @@ class TitipanController extends Controller
         $titipanPaginator = Titipan::where('user_id',Auth::user()->id)->orderBy('created_at','desc')->paginate(10); // Get users from DB
         $titipan = new Collection($titipanPaginator->items(), $this->titipanTransformer); // Create a resource collection transformer
         $this->fractal->setSerializer(new \App\Foundations\Fractal\NoDataArraySerializer);
-        // $this->fractal->parseIncludes('detail'); // parse includes
+        // $this->fractal->parseIncludes("post, dikirimke, user, shopper, detail"); // parse includes
+        $this->fractal->parseIncludes("shopper,detail,post"); // parse includes
         $titipan->setPaginator(new IlluminatePaginatorAdapter($titipanPaginator));
         $titipan = $this->fractal->createData($titipan); // Transform data
         return $titipan->toArray();
