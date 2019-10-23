@@ -67,11 +67,15 @@ class TitipanController extends Controller
     }
 
     public function showShopperTitipan()
-    {
-        $titipanPaginator = Titipan::where('shopper_id',Auth::user()->id)->orderBy('created_at','desc')->paginate(10); // Get users from DB
+    {                                                                           // ini 4 soalnya 4 adalah sudah terverif dibayar
+        $titipanPaginator = Titipan::where('shopper_id',Auth::user()->id)->where(function($q) {
+            $q->where('status_transaksi_id', "4")
+              ->orWhere('status_transaksi_id', "5");
+        })->orderBy('created_at','desc')->paginate(10); // Get users from DB
         $titipan = new Collection($titipanPaginator->items(), $this->titipanTransformer); // Create a resource collection transformer
         $this->fractal->setSerializer(new \App\Foundations\Fractal\NoDataArraySerializer);
         // $this->fractal->parseIncludes('post'); // parse includes
+        $this->fractal->parseIncludes("user,detail,post");
         $titipan->setPaginator(new IlluminatePaginatorAdapter($titipanPaginator));
         $titipan = $this->fractal->createData($titipan); // Transform data
         return $titipan->toArray();
@@ -151,10 +155,10 @@ class TitipanController extends Controller
         }
 
         try{
-            $path = Gambar::savePictureToServer($request->bukti_bayar);
-            $titipan->bukti_bayar = $path;
-            $titipan->status_transaksi_id = 3;
-            $titipan->save();
+            // $path = Gambar::savePictureToServer($request->bukti_bayar);
+            // $data->bukti_bayar = $path;
+            $data->status_transaksi_id = "4";
+            $data->save();
         } catch(\Exception $e){
             return response()->json(array('message'=>'Gagal Melakukan Pembayaran'),500);
         }
@@ -182,9 +186,9 @@ class TitipanController extends Controller
         }
 
         try{
-            $titipan->nomer_resi = $request->nomer_resi;
-            $titipan->status_transaksi_id = 5;
-            $titipan->save();
+            $data->nomer_resi = $request->nomer_resi;
+            $data->status_transaksi_id = 5;
+            $data->save();
         } catch(\Exception $e){
             return response()->json(array('message'=>'Gagal mengubah status pengiriman'),500);
         }
