@@ -1,6 +1,7 @@
 <?php
 namespace App\Transformers;
 
+use App\Models\Follower;
 use App\User;
 use App\Models\Preorder;
 use App\Models\HasSeen;
@@ -42,12 +43,22 @@ class PreorderTransformer extends TransformerAbstract
             {
                 $is_wishlist = 0;
             }
+            if(Follower::where([['user_id',$user->id],['follower_user_id',$preorder->user->id]])->exists()){
+                $is_followed=1;
+            }
+            else
+            {
+                $is_followed=0;
+            }
         }
         else
         {
             $seen = 0;
             $is_wishlist = 0;
+            $is_followed=0;
         }
+        // dd($preorder->user->id);
+        
         return [
             'id' => $preorder->id,
             'user_id' => $preorder->user_id, 
@@ -57,6 +68,7 @@ class PreorderTransformer extends TransformerAbstract
             'expired' => $preorder->expired, 
             'seen' => $seen, 
             'is_wishlist' => $is_wishlist, 
+            'followed'=>$is_followed,
             // 'detail_produk_id' => $preorder->detail_produk_id
         ];
 

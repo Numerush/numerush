@@ -149,7 +149,7 @@ class UserController extends Controller
 
         $followers = new Collection($followersPaginator->items(), $this->followerTransformer);
         $this->fractal->setSerializer(new \App\Foundations\Fractal\NoDataArraySerializer);
-        $this->fractal->parseIncludes('user,follower'); // parse includes
+        $this->fractal->parseIncludes('follower'); // parse includes
         $followers->setPaginator(new IlluminatePaginatorAdapter($followersPaginator));
 
         $followers = $this->fractal->createData($followers); // Transform data
@@ -224,7 +224,7 @@ class UserController extends Controller
 
         $reviews = new Collection($reviewsPaginator->items(), $this->reviewTransformer);
         $this->fractal->setSerializer(new \App\Foundations\Fractal\NoDataArraySerializer);
-        $this->fractal->parseIncludes('user,reviewer'); // parse includes
+        $this->fractal->parseIncludes('reviewer'); // parse includes
         $reviews->setPaginator(new IlluminatePaginatorAdapter($reviewsPaginator));
 
         $reviews = $this->fractal->createData($reviews); // Transform data
@@ -236,10 +236,10 @@ class UserController extends Controller
     {
         $currentUser = User::getCurrentUser();
 
-        if($currentUser->id == $request->id_User)
+        if($currentUser->id == $request->id_user)
             return response()->json(['message' => 'Tidak Bisa review diri sendiri']);        
 
-        if(!User::find($request->id_User))
+        if(!User::find($request->id_user))
             return response()->json(['message' => 'User dengan id tersebut tidak ditemukan']);        
 
         DB::beginTransaction();
@@ -247,7 +247,7 @@ class UserController extends Controller
             $follow = Review::create([
                 'pesan' => $request->deskripsi,
                 'rating' => $request->rating,
-                'user_id' => $request->id_User,
+                'user_id' => $request->id_user,
                 'reviewer_user_id' => $currentUser->id
             ]);
 

@@ -1,6 +1,7 @@
 <?php
 namespace App\Transformers;
 
+use App\Models\Follower;
 use App\User;
 use App\Models\Requesting;
 use App\Models\HasSeen;
@@ -42,12 +43,20 @@ class RequestingTransformer extends TransformerAbstract
             {
                 $is_wishlist = 0;
             }
+            if(Follower::where([['user_id',$user->id],['follower_user_id',$requesting->user->id]])->exists()){
+                $is_followed=1;
+            }
+            else
+            {
+                $is_followed=0;
+            }
         }
         else
         {
             //karena belum login maka belum dilihat dan tidak di like
             $seen = 0;
             $is_wishlist = 0;
+            $is_followed=0;
         }
 
         return [
@@ -58,7 +67,8 @@ class RequestingTransformer extends TransformerAbstract
             // 'dikirim_ke' => $requesting->dikirim_ke, 
             'expired' => $requesting->expired,
             'seen' => $seen,
-            'is_wishlist' => $is_wishlist
+            'is_wishlist' => $is_wishlist,
+            'followed'=>$is_followed,
         ];
     }
 

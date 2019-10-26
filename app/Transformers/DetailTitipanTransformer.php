@@ -7,7 +7,7 @@ use League\Fractal\TransformerAbstract;
 class DetailTitipanTransformer extends TransformerAbstract
 {
     protected $availableIncludes = [
-        'varian', 'post', 'dikirimke', 'user', 'shopper'
+        'varian', 'post', 'dikirimke', 'user', 'shopper','detailProduct'
     ];
 
     public function transform(DetailTitipan $data)
@@ -43,5 +43,10 @@ class DetailTitipanTransformer extends TransformerAbstract
     public function includeDikirimKe(DetailTitipan $data)
     {
         return $this->item($data->dikirimke, \App::make(AlamatTransformer::class), 'include');
+    }
+
+    public function includeDetailProduct(DetailTitipan $data)
+    {
+        return $this->item($data->varian, \App::make(VarianTransformer::class), 'include');
     }
 }

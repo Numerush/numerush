@@ -1,6 +1,7 @@
 <?php
 namespace App\Transformers;
 
+use App\Models\Follower;
 use App\User;
 use App\Models\Trip;
 use App\Models\HasSeen;
@@ -42,11 +43,19 @@ class TripTransformer extends TransformerAbstract
             {
                 $is_wishlist = 0;
             }
+            if(Follower::where([['user_id',$user->id],['follower_user_id',$trip->user->id]])->exists()){
+                $is_followed=1;
+            }
+            else
+            {
+                $is_followed=0;
+            }
         }
         else
         {
             $seen = 0;
             $is_wishlist = 0;
+            $is_followed=0;
         }
 
         return [
@@ -60,6 +69,7 @@ class TripTransformer extends TransformerAbstract
             'dikirim_dari' => $trip->dikirim_dari,
             'seen' => $seen,
             'is_wishlist' => $is_wishlist,
+            'followed'=>$is_followed,
         ];
     }
 
