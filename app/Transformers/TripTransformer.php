@@ -43,7 +43,7 @@ class TripTransformer extends TransformerAbstract
             {
                 $is_wishlist = 0;
             }
-            if(Follower::where([['user_id',$user->id],['follower_user_id',$trip->user->id]])->exists()){
+            if(Follower::where([['follower_user_id',$user->id],['user_id',$trip->user->id]])->exists()){
                 $is_followed=1;
             }
             else

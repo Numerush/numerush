@@ -43,7 +43,7 @@ class PreorderTransformer extends TransformerAbstract
             {
                 $is_wishlist = 0;
             }
-            if(Follower::where([['user_id',$user->id],['follower_user_id',$preorder->user->id]])->exists()){
+            if(Follower::where([['follower_user_id',$user->id],['user_id',$preorder->user->id]])->exists()){
                 $is_followed=1;
             }
             else
