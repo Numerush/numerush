@@ -33,7 +33,7 @@ class TimelineController extends Controller
         $currentUser = User::getCurrentUser();
 
         $query = DetailProduk::paginate(30); // Get users from DB
-        $follower = Follower::where('user_id', $currentUser->id)->get()->pluck('follower_user_id')->toArray();
+        $follower = Follower::where('follower_user_id', $currentUser->id)->get()->pluck('user_id')->toArray();
         
         //hapus yang dari trip
         $query = $query->filter(function($value, $key) {
