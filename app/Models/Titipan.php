@@ -34,14 +34,18 @@ class Titipan extends Model
 
             $box_ids = explode('~@~', $request->box_ids);
             $isi_box = BoxTitipan::whereIn('id', $box_ids)->get();
+            
     
-            $jumlahShopper = count($isi_box->pluck('shopper_id'));
-    
+            $jumlahShopper = count($isi_box->pluck('shopper_id')->groupBy('shopper_id'));
+            // dd($jumlahShopper);
+            
             if($jumlahShopper > 1)
             {
                 $bagi_isi = $isi_box->groupBy('shopper_id');
     
-                foreach($bagi_isi as $isi)
+                foreach($bagi_isi as $isiTemp)
+                {
+                    foreach($isiTemp as $isi)
                 {
                     $titipan = new Titipan;
                     $titipan->user_id = $isi->user_id;
@@ -58,22 +62,20 @@ class Titipan extends Model
                     $titipan->kode_unik = rand(1,999);
                     $titipan->save();
                     $total = 0;
-                    
-                    foreach($isi as $box)
-                    {
                         $detil = new DetailTitipan;
-                        $detil->harga = $box->harga;
+                        $detil->harga = $isi->harga;
                         $detil->titipan_id = $titipan->id;
-                        $detil->varian_id = $box->varian_id;
-                        $detil->postdata_type = $box->postdata_type;
-                        $detil->postdata_id = $box->postdata_id;
+                        $detil->varian_id = $isi->varian_id;
+                        $detil->postdata_type = $isi->postdata_type;
+                        $detil->postdata_id = $isi->postdata_id;
                         $detil->save();
                         
-                        $total += $box->harga;
-                    }
+                        $total += $isi->harga;
+                    
     
                     $titipan->total_harga = $total;
                     $titipan->save();
+                }
                 }
             }
             else if($jumlahShopper == 1)
@@ -88,7 +90,7 @@ class Titipan extends Model
                 $titipan->metode_bayar = $request->metode_bayar;
                 $titipan->kurir_id = $request->kurir_id;
                 $titipan->estimasi_pengiriman = $isi_box->first()->estimasi_pengiriman;
-                    $titipan->dibeli_dari = $isi_box->first()->dibeli_dari;
+                $titipan->dibeli_dari = $isi_box->first()->dibeli_dari;
                 $titipan->dikirim_dari = $isi_box->first()->dikirim_dari;
                 $titipan->dikirim_ke = $isi_box->first()->dikirim_ke;
                 $titipan->status_transaksi_id = 1;
@@ -129,10 +131,10 @@ class Titipan extends Model
             
             DB::rollBack();
             dd($e);
-            return false;
+            return null;
         }
 
         DB::commit();
-        return true;
+        return $titipan;
     }
 }

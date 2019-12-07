@@ -2,12 +2,14 @@
 namespace App\Transformers;
 
 use App\Models\DetailTitipan;
+use App\Models\DetailProduk;
+use App\Models\Gambar;
 use League\Fractal\TransformerAbstract;
 
 class DetailTitipanTransformer extends TransformerAbstract
 {
     protected $availableIncludes = [
-        'varian', 'post', 'dikirimke', 'user', 'shopper','detailProduct'
+        'varian', 'post', 'dikirimke', 'user', 'shopper','detailProduct','gambarProduct'
     ];
 
     public function transform(DetailTitipan $data)
@@ -39,6 +41,7 @@ class DetailTitipanTransformer extends TransformerAbstract
         else if($data->tipe == 2)
             return $this->item($data->postdata, \App::make(TripTransformer::class),'include');
     }
+    
 
     public function includeDikirimKe(DetailTitipan $data)
     {
@@ -47,6 +50,11 @@ class DetailTitipanTransformer extends TransformerAbstract
 
     public function includeDetailProduct(DetailTitipan $data)
     {
-        return $this->item($data->varian, \App::make(VarianTransformer::class), 'include');
+        return $this->item(DetailProduk::find($data->varian->detail_produk_id), \App::make(DetailProdukTransformer::class), 'include');
+    }
+
+    public function includeGambarProduct(DetailTitipan $data)
+    {
+        return $this->collection(Gambar::where("detail_produk_id",$data->varian->detail_produk_id)->get(), \App::make(GambarTransformer::class), 'include');
     }
 }

@@ -29,6 +29,7 @@ use App\Transformers\DoPreorderTransformer;
 use App\Transformers\DoTripTransformer;
 use App\Transformers\KategoriTransformer;
 use App\Transformers\FollowerTransformer;
+use App\Transformers\NotifikasiUserTransformer;
 
 use League\Fractal\Manager;
 use League\Fractal\Pagination\IlluminatePaginatorAdapter;
@@ -47,11 +48,13 @@ class UserController extends Controller
     private $doTripTransformer;
     private $kategoriTransformer;
     private $followerTransformer;
+    private $notifikasiUserTransformer;
 
     function __construct(Manager $fractal, UserTransformer $userTransformer, DetailProdukTransformer $detailProdukTransformer
         , ReviewTransformer $reviewTransformer, DoRequestingTransformer $doRequestingTransformer
         , DoPreorderTransformer $doPreorderTransformer, DoTripTransformer $doTripTransformer
-        , KategoriTransformer $kategoriTransformer, FollowerTransformer $followerTransformer)
+        , KategoriTransformer $kategoriTransformer, FollowerTransformer $followerTransformer
+        , NotifikasiUserTransformer $notifikasiUserTransformer)
     {
         $this->fractal = $fractal;
         $this->userTransformer = $userTransformer;
@@ -62,6 +65,7 @@ class UserController extends Controller
         $this->doTripTransformer = $doTripTransformer;
         $this->kategoriTransformer = $kategoriTransformer;
         $this->followerTransformer = $followerTransformer;
+        $this->notifikasiUserTransformer = $notifikasiUserTransformer;
     }
 
     public function user(Request $request) {
@@ -140,6 +144,22 @@ class UserController extends Controller
         $this->fractal->parseIncludes('user,user.review,user.review.reviewer,varian,trip,trip.asal,trip.asal.negara,trip.tujuan,trip.tujuan.negara,dikirimke,dikirimke.kota,dikirimke.kota.negara,detail,detail.kategori,detail.gambar'); // parse includes
         $data = $this->fractal->createData($data); // Transform data
         return $data->toArray(); // Get transformed array of data
+    }
+    public function getNotifikasi()
+    {
+        $currentUser = User::getCurrentUser();
+        $notifikasiPaginator = NotifikasiUser::where('user_id', '=', $currentUser->id)
+        ->orderBy("created_at","desc")
+        
+        ->paginate(10);
+
+        $notifikasi = new Collection($notifikasiPaginator->items(), $this->notifikasiUserTransformer);
+        $this->fractal->setSerializer(new \App\Foundations\Fractal\NoDataArraySerializer);
+        $notifikasi->setPaginator(new IlluminatePaginatorAdapter($notifikasiPaginator));
+
+        $notifikasi = $this->fractal->createData($notifikasi); // Transform data
+
+        return $notifikasi->toArray(); // Get transformed array of data
     }
 
     public function getFollower()

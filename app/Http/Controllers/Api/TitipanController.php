@@ -9,13 +9,16 @@ use Auth;
 use DB;
 use App\User;
 use App\Models\BoxTitipan;
+use App\Models\DetailTitipan;
 use App\Models\Titipan;
 use App\Transformers\BoxTitipanTransformer;
+use App\Transformers\DetailTitipanTransformer;
 use App\Transformers\TitipanTransformer;
 
 use League\Fractal\Manager;
 use League\Fractal\Pagination\IlluminatePaginatorAdapter;
 use League\Fractal\Resource\Collection;
+use League\Fractal\Resource\Item;
 
 
 class TitipanController extends Controller
@@ -23,11 +26,13 @@ class TitipanController extends Controller
     private $fractal;
     private $boxTitipanTransformer;
 
-    function __construct(Manager $fractal, BoxTitipanTransformer $boxTitipanTransformer, TitipanTransformer $titipanTransformer)
+    function __construct(Manager $fractal, BoxTitipanTransformer $boxTitipanTransformer, TitipanTransformer $titipanTransformer,DetailTitipanTransformer $detailTitipanTransformer)
     {
         $this->fractal = $fractal;
         $this->boxTitipanTransformer = $boxTitipanTransformer;
         $this->titipanTransformer = $titipanTransformer;
+        $this->detailTitipanTransformer = $detailTitipanTransformer;
+
     }
 
     public function index()
@@ -48,7 +53,7 @@ class TitipanController extends Controller
 
         $data = new Collection($dataPaginator, $this->boxTitipanTransformer);
         $this->fractal->setSerializer(new \App\Foundations\Fractal\NoDataArraySerializer);
-        $this->fractal->parseIncludes('user,user.review,user.review.reviewer,varian,varian.detail,dikirimke,dikirimke.kota,dikirimke.kota.negara'); // parse includes
+        $this->fractal->parseIncludes('user,varian,varian.detail,varian.gambar,dikirimke,dikirimke.kota,dikirimke.kota.negara'); // parse includes
         $data = $this->fractal->createData($data); // Transform data
 
         return $data->toArray(); // Get transformed array of data
@@ -125,9 +130,16 @@ class TitipanController extends Controller
             return response()->json(array('message'=>'Box titipan bukan milik anda'),500);
         }
 
-        if(Titipan::saveToTitipan($request))
+        $result=Titipan::saveToTitipan($request);
+
+        if($result!=null)
         {
-            return response()->json(array('message'=>'Berhasil melakukan titipan'),200);
+            
+            $detailtitipan = new Item($result, $this->titipanTransformer); // Create a resource collection transformer
+            
+            $this->fractal->setSerializer(new \App\Foundations\Fractal\NoDataArraySerializer);
+            $detailtitipan = $this->fractal->createData($detailtitipan); // Transform data
+            return response()->json(array('message'=>'Berhasil melakukan titipan','data'=>$detailtitipan->toArray()),200);
         }
         else
         {
@@ -157,7 +169,7 @@ class TitipanController extends Controller
         try{
             // $path = Gambar::savePictureToServer($request->bukti_bayar);
             // $data->bukti_bayar = $path;
-            $data->status_transaksi_id = "4";
+            $data->status_transaksi_id = 3;
             $data->save();
         } catch(\Exception $e){
             return response()->json(array('message'=>'Gagal Melakukan Pembayaran'),500);
@@ -194,5 +206,64 @@ class TitipanController extends Controller
         }
 
         return response()->json(array('message'=>'Berhasil mengubah status pengiriman'),200);
+    }
+
+    public function getDetailTitipan(Request $request)
+    {
+        
+        $request->validate([
+            'titipan_id' => 'required',
+        ]);
+
+        $detailTitipanPaginator = DetailTitipan::where("titipan_id",$request->titipan_id)->paginate(10);
+        $detailtitipan = new Collection($detailTitipanPaginator->items(), $this->detailTitipanTransformer); // Create a resource collection transformer
+        $this->fractal->setSerializer(new \App\Foundations\Fractal\NoDataArraySerializer);
+        $this->fractal->parseIncludes("detailProduct,gambarProduct");
+        $detailtitipan->setPaginator(new IlluminatePaginatorAdapter($detailTitipanPaginator));
+        $detailtitipan = $this->fractal->createData($detailtitipan); // Transform data
+        return $detailtitipan->toArray();
+    }
+
+
+    public function showAdminTitipan()
+    { 
+        $currentUser = User::getCurrentUser();
+        if($currentUser->id != "1")
+        {
+            DB::rollBack();   
+            return response()->json(array('message'=>'Bukan Admin ya'),500);
+        }
+        $titipanPaginator = Titipan::where('status_transaksi_id',"3")->orderBy('created_at','desc')->paginate(10); // Get users from DB
+        $titipan = new Collection($titipanPaginator->items(), $this->titipanTransformer); // Create a resource collection transformer
+        $this->fractal->setSerializer(new \App\Foundations\Fractal\NoDataArraySerializer);
+        $this->fractal->parseIncludes("user,detail,post");
+        $titipan->setPaginator(new IlluminatePaginatorAdapter($titipanPaginator));
+        $titipan = $this->fractal->createData($titipan); // Transform data
+        return $titipan->toArray();
+    }
+
+    public function confirmAdminTitipan(Request $request)
+    { 
+        $request->validate([
+            'titipan_id' => 'required',
+        ]);
+        
+        $data = Titipan::find($request->titipan_id);
+
+        $currentUser = User::getCurrentUser();
+        if($currentUser->id != "1")
+        {
+            DB::rollBack();   
+            return response()->json(array('message'=>'Bukan Admin ya'),500);
+        }
+
+        try{
+            $data->status_transaksi_id = 4;
+            $data->save();
+        } catch(\Exception $e){
+            return response()->json(array('message'=>'Gagal mengubah status Pembayaran'),500);
+        }
+
+        return response()->json(array('message'=>'Berhasil mengubah status Pembayaran'),200);
     }
 }
